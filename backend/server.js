@@ -166,8 +166,20 @@ app.post('/api/locate', async (req, res) => {
 
 // Start Server if run directly
 if (require.main === module) {
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+  });
+
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`Port ${PORT} already in use. Retrying in 1s...`);
+      setTimeout(() => {
+        server.close();
+        server.listen(PORT);
+      }, 1000);
+    } else {
+      throw err;
+    }
   });
 }
 
